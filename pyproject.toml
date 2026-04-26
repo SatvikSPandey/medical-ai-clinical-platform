@@ -1,5 +1,5 @@
-﻿# ============================================================
-# Project 18 — Medical AI Clinical Platform
+# ============================================================
+# Project 18 â€” Medical AI Clinical Platform
 # Tooling configuration (ruff, mypy, pytest)
 # ============================================================
 
@@ -10,7 +10,7 @@ description = "DICOM-native medical AI inference platform with HL7 FHIR R4 integ
 requires-python = ">=3.11"
 
 # ============================================================
-# Ruff — linter + formatter
+# Ruff â€” linter + formatter
 # ============================================================
 [tool.ruff]
 line-length = 100
@@ -40,7 +40,7 @@ quote-style = "double"
 indent-style = "space"
 
 # ============================================================
-# Mypy — static type checker
+# Mypy â€” static type checker
 # ============================================================
 [tool.mypy]
 python_version = "3.11"
@@ -67,7 +67,7 @@ module = [
 ignore_missing_imports = true
 
 # ============================================================
-# Pytest — test runner
+# Pytest â€” test runner
 # ============================================================
 [tool.pytest.ini_options]
 minversion = "8.0"
