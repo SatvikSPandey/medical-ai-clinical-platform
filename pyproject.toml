@@ -1,0 +1,123 @@
+﻿# ============================================================
+# Project 18 — Medical AI Clinical Platform
+# Tooling configuration (ruff, mypy, pytest)
+# ============================================================
+
+[project]
+name = "medical-ai-clinical-platform"
+version = "0.1.0"
+description = "DICOM-native medical AI inference platform with HL7 FHIR R4 integration and FDA-aligned audit controls"
+requires-python = ">=3.11"
+
+# ============================================================
+# Ruff — linter + formatter
+# ============================================================
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+    "venv",
+    "imp",
+    "data",
+    "ml/weights",
+    "*.ipynb",
+]
+
+[tool.ruff.lint]
+# E/W = pycodestyle, F = pyflakes, I = isort, B = bugbear,
+# UP = pyupgrade, SIM = simplify, RUF = ruff-specific
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF"]
+ignore = [
+    "E501",  # line-too-long handled by formatter
+    "B008",  # FastAPI Depends() in defaults is idiomatic
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]  # allow assert False in tests
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ============================================================
+# Mypy — static type checker
+# ============================================================
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+exclude = [
+    "venv",
+    "imp",
+    "tests",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "pydicom.*",
+    "fhir.*",
+    "torch.*",
+    "torchvision.*",
+    "pytorch_grad_cam.*",
+    "streamlit.*",
+]
+ignore_missing_imports = true
+
+# ============================================================
+# Pytest — test runner
+# ============================================================
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=api",
+    "--cov=ml",
+    "--cov=dicom_handler",
+    "--cov=fhir_client",
+    "--cov=compliance",
+    "--cov-report=term-missing",
+    "--cov-report=html:.coverage_html",
+]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with -m 'not slow')",
+    "integration: marks tests requiring external services (HAPI FHIR)",
+    "unit: marks tests as unit tests (no external dependencies)",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning:pydicom.*",
+    "ignore::DeprecationWarning:torch.*",
+]
+
+# ============================================================
+# Coverage
+# ============================================================
+[tool.coverage.run]
+branch = true
+source = ["api", "ml", "dicom_handler", "fhir_client", "compliance"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+]
+
+[tool.coverage.report]
+precision = 1
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
