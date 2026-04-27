@@ -33,6 +33,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"ui/app.py" = ["E402", "SIM108"]
 "tests/*" = ["B011"]  # allow assert False in tests
 
 [tool.ruff.format]
