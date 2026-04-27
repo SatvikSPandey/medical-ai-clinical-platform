@@ -1,5 +1,5 @@
 # ============================================================
-# Project 18 — Medical AI Clinical Platform
+# Project 18 â€” Medical AI Clinical Platform
 # Python 3.11
 # ============================================================
 
@@ -23,7 +23,7 @@ pydantic-settings==2.7.0
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 
-# ---- ML / Inference (CPU-only — no CUDA in serving image) ----
+# ---- ML / Inference (CPU-only â€” no CUDA in serving image) ----
 torch==2.5.1
 torchvision==0.20.1
 grad-cam==1.5.4
@@ -42,3 +42,6 @@ pytest-cov==6.0.0
 # ---- Dev tooling ----
 ruff==0.8.4
 mypy==1.13.0
+# ---- Chest X-ray pathology model (Apache-2.0, peer-reviewed) ----
+torchxrayvision==1.4.0
+scikit-image==0.24.0
