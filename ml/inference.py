@@ -157,13 +157,12 @@ def load_model() -> ModelRecord:
     if _model is not None and _model_record is not None:
         return _model_record
 
-    weights_path = _get_weights_path()
-
     try:
         model = xrv.models.DenseNet(weights=MODEL_WEIGHTS_KEY)
         model.eval()
     except Exception as e:
         raise InferenceError(f"Failed to load torchxrayvision model: {e}") from e
+    weights_path = _get_weights_path()
 
     record = register_model(
         model_id=MODEL_ID,

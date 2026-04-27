@@ -1,0 +1,83 @@
+# ============================================================
+# Dockerfile.api - Medical AI Clinical Platform - FastAPI backend
+#
+# Multi-stage build:
+#   Stage 1 (builder): install all deps into a venv
+#   Stage 2 (runtime): copy only the venv + source, no build tools
+#
+# CPU-only PyTorch: we use the PyTorch CPU wheel index so the image
+# ships without 2GB of CUDA libraries that would never be used on
+# a CPU-only hosting tier (Render free, Railway, etc.)
+#
+# Target size: ~1.2GB (torch CPU ~200MB, torchxrayvision ~50MB,
+# the rest ~100MB). Without CPU-only pinning this would be ~4GB.
+# ============================================================
+
+# ---- Stage 1: builder ----
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create venv
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip
+RUN pip install --upgrade pip setuptools wheel
+
+# Install PyTorch CPU-only FIRST from the dedicated CPU index
+# This prevents pip from pulling the CUDA build from PyPI
+RUN pip install \
+    torch==2.5.1 \
+    torchvision==0.20.1 \
+    --index-url https://download.pytorch.org/whl/cpu
+
+# Install the rest of the dependencies from PyPI
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# ---- Stage 2: runtime ----
+FROM python:3.11-slim AS runtime
+
+WORKDIR /app
+
+# Runtime system deps only (no gcc, no g++)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    libgl1 \
+    libglib2.0-0 \
+    libglib2.0-0 \
+    libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the venv from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy application source
+COPY api/       ./api/
+COPY ml/        ./ml/
+COPY dicom_handler/ ./dicom_handler/
+COPY fhir_client/   ./fhir_client/
+COPY compliance/    ./compliance/
+COPY ml/weights/    ./ml/weights/
+
+# Non-root user for security
+RUN mkdir -p /app/data && useradd --create-home --shell /bin/bash appuser && chown -R appuser:appuser /app/data
+USER appuser
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python -c "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"
+
+# Start the API
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

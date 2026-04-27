@@ -1,0 +1,42 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Secrets
+imp/
+.env
+*.env
+
+# ML weights (downloaded at runtime by torchxrayvision)
+
+# Test artifacts
+.coverage
+.coverage_html/
+.pytest_cache/
+htmlcov/
+audit_log.db
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Streamlit
+.streamlit/
+
+# Docs
+*.md
+compliance/docs/
+
+# Temp scripts
+imp/
+
+# OS
+.DS_Store
+Thumbs.db

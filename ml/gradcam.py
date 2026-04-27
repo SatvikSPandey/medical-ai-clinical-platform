@@ -23,8 +23,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-from pytorch_grad_cam import GradCAMPlusPlus
-from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+# pytorch_grad_cam imported lazily inside generate_gradcam()
+# ClassifierOutputTarget imported lazily inside generate_gradcam()
 
 from ml.model_registry import ModelRecord
 
@@ -72,6 +72,8 @@ def generate_gradcam(
     Raises:
         GradCAMError: If the model is not loaded or pathology is invalid.
     """
+    from pytorch_grad_cam import GradCAMPlusPlus
+    from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
     # Lazy import — ensures we read the live singleton, not the None
     # that was present when this module was first imported.
     import ml.inference as _inf

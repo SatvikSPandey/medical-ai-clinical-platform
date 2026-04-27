@@ -1,0 +1,51 @@
+version: "3.9"
+
+# ============================================================
+# Medical AI Clinical Platform - docker-compose
+#
+# Services:
+#   api  - FastAPI backend on port 8000
+#
+# Usage:
+#   docker-compose up --build      # first run
+#   docker-compose up              # subsequent runs
+#   docker-compose down            # stop
+#
+# The Streamlit UI runs on Streamlit Cloud and calls the API.
+# For local UI + API: streamlit run ui/app.py (separate terminal)
+# ============================================================
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    image: medical-ai-platform-api:latest
+    container_name: medical-ai-platform-api
+    ports:
+      - "8000:8000"
+    environment:
+      - FHIR_BASE_URL=http://hapi.fhir.org/baseR4
+      - FHIR_TIMEOUT_SECONDS=30.0
+      - AUDIT_DB_PATH=/app/data/audit_log.db
+      - SECRET_KEY=change-this-in-production-use-env-var
+      - DEBUG=false
+    volumes:
+      # Persist audit log between container restarts
+      - audit_data:/app/data
+      # Cache torchxrayvision model weights between restarts
+      - model_cache:/root/.torchxrayvision
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 3
+
+volumes:
+  audit_data:
+    driver: local
+  model_cache:
+    driver: local
